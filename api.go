@@ -12,7 +12,7 @@ type Raft struct {
 	raftState
 
 	// applyCh 异步地将 logs 发送给 leader,be committed and applied to FSM.
-	//applyCh chan *logFuture
+	applyCh chan *logFuture
 
 	// Raft 节点为 Leader 时使用.
 	leaderState leaderState
