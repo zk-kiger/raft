@@ -93,3 +93,41 @@ func (i *InmemStore) DeleteRange(min, max uint64) error {
 	}
 	return nil
 }
+
+// Set 用于设置 Raft 日志之外的 key/value.
+func (i *InmemStore) Set(key, val []byte) error {
+	i.lock.Lock()
+	defer i.lock.Unlock()
+	i.kv[string(key)] = val
+	return nil
+}
+
+// Get 用于从存储中检索 key 对应的 value.
+func (i *InmemStore) Get(key []byte) ([]byte, error) {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
+	val := i.kv[string(key)]
+	if val == nil {
+		return nil, ErrKeyNotFound
+	}
+	return val, nil
+}
+
+// SetUint64 和 Set 类似,不过 value 为 uint64.
+func (i *InmemStore) SetUint64(key []byte, val uint64) error {
+	i.lock.Lock()
+	defer i.lock.Unlock()
+	i.kvInt[string(key)] = val
+	return nil
+}
+
+// GetUint64 和 Get 类似,不过 value 为 uint64.
+func (i *InmemStore) GetUint64(key []byte) (uint64, error) {
+	i.lock.RLock()
+	defer i.lock.RUnlock()
+	val, ok := i.kvInt[string(key)]
+	if !ok {
+		return 0, ErrKeyNotFound
+	}
+	return val, nil
+}

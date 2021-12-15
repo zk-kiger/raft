@@ -1,6 +1,9 @@
 package raft
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type LogType uint8
 
@@ -10,6 +13,11 @@ const (
 
 	// LogNoop 被用于维护领导.
 	LogNoop
+)
+
+var (
+	// ErrKeyNotFound 表示给定的 key 不存在
+	ErrKeyNotFound = errors.New("not found")
 )
 
 // Log entry 被复制到 Raft cluster 所有成员,成为复制状态机的核心.

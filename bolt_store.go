@@ -1,6 +1,8 @@
 package raft
 
-import "github.com/boltdb/bolt"
+import (
+	"github.com/boltdb/bolt"
+)
 
 const (
 	// 在 db 文件上使用的权限.仅在数据库文件不存在且需要创建时使用.
@@ -138,7 +140,7 @@ func (b *BoltStore) GetLog(idx uint64, log *Log) error {
 	val := bucket.Get(uint64ToBytes(idx))
 
 	if val == nil {
-		return ErrLogNotFound
+		return ErrKeyNotFound
 	}
 	return decodeMsgPack(val, log)
 }
@@ -195,4 +197,50 @@ func (b *BoltStore) DeleteRange(min, max uint64) error {
 	}
 
 	return tx.Commit()
+}
+
+// Set 用于设置 Raft 日志之外的 key/value.
+func (b *BoltStore) Set(key, val []byte) error {
+	tx, err := b.conn.Begin(true)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	bucket := tx.Bucket(dbConf)
+	if err := bucket.Put(key, val); err != nil {
+		return nil
+	}
+	return tx.Commit()
+}
+
+// Get 用于从存储中检索 key 对应的 value.
+func (b *BoltStore) Get(key []byte) ([]byte, error) {
+	tx, err := b.conn.Begin(true)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	bucket := tx.Bucket(dbConf)
+	val := bucket.Get(key)
+	if val == nil {
+		return nil, ErrKeyNotFound
+	}
+
+	return append([]byte(nil), val...), nil
+}
+
+// SetUint64 和 Set 类似,不过 value 为 uint64.
+func (b *BoltStore) SetUint64(key []byte, val uint64) error {
+	return b.Set(key, uint64ToBytes(val))
+}
+
+// GetUint64 和 Get 类似,不过 value 为 uint64.
+func (b *BoltStore) GetUint64(key []byte) (uint64, error) {
+	val, err := b.Get(key)
+	if err != nil {
+		return 0, nil
+	}
+	return bytesToUint64(val), nil
 }

@@ -8,6 +8,8 @@ import (
 
 type ProtocolVersion int
 
+type SnapshotVersion int
+
 type Config struct {
 	// ProtocolVersion 协议版本号,默认为 0.
 	ProtocolVersion ProtocolVersion
