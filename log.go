@@ -13,6 +13,12 @@ const (
 
 	// LogNoop 被用于维护领导.
 	LogNoop
+
+	LogBarrier
+
+	// LogConfiguration 建立成员变更配置.
+	// It is created when a server is added, removed, promoted, etc.
+	LogConfiguration
 )
 
 var (

@@ -240,7 +240,7 @@ func (b *BoltStore) SetUint64(key []byte, val uint64) error {
 func (b *BoltStore) GetUint64(key []byte) (uint64, error) {
 	val, err := b.Get(key)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 	return bytesToUint64(val), nil
 }

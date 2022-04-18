@@ -147,7 +147,7 @@ func (f *FileSnapshotStore) Create(version SnapshotVersion, index, term uint64, 
 	// 创建新的路径.
 	name := snapshotName(term, index)
 	// /base/snapshots ==> /base/snapshots/1-1-1.tmp
-	// 临时文件,用于用户写入 state.在关闭文件时,去掉 tmpSuffix.
+	// 临时文件,用于用户写入 state. 在关闭文件时,去掉 tmpSuffix.
 	path := filepath.Join(f.path, name+tmpSuffix)
 	f.logger.Info("creating new snapshot, path: ", path)
 
@@ -185,7 +185,7 @@ func (f *FileSnapshotStore) Create(version SnapshotVersion, index, term uint64, 
 
 	// 打开 state 文件.
 	// /base/snapshots/1-1-1.tmp ==> /base/snapshots/1-1-1.tmp/state.bin
-	statePath := filepath.Join(f.path, stateFilePath)
+	statePath := filepath.Join(path, stateFilePath)
 	fl, err := os.Create(statePath)
 	if err != nil {
 		f.logger.Error("failed to create state file, error: ", err)
@@ -335,7 +335,6 @@ func (f *FileSnapshotStore) Open(id string) (*SnapshotMeta, io.ReadCloser, error
 		f.logger.Error("failed to open the state file, error: ", err)
 		return nil, nil, err
 	}
-	defer fl.Close()
 
 	// 创建 crc64 Hash.
 	stateHash := crc64.New(crc64.MakeTable(crc64.ECMA))
@@ -344,6 +343,7 @@ func (f *FileSnapshotStore) Open(id string) (*SnapshotMeta, io.ReadCloser, error
 	_, err = io.Copy(stateHash, fl)
 	if err != nil {
 		f.logger.Error("failed to read state file, error: ", err)
+		fl.Close()
 		return nil, nil, err
 	}
 
@@ -351,6 +351,7 @@ func (f *FileSnapshotStore) Open(id string) (*SnapshotMeta, io.ReadCloser, error
 	computed := stateHash.Sum(nil)
 	if bytes.Compare(meta.CRC, computed) != 0 {
 		f.logger.Error("CRC checksum failed, store: ", meta.CRC, "computed: ", computed)
+		fl.Close()
 		return nil, nil, err
 	}
 
@@ -358,6 +359,7 @@ func (f *FileSnapshotStore) Open(id string) (*SnapshotMeta, io.ReadCloser, error
 	// whence：0 表示相对于文件的原点,1 表示相对于当前偏移量,2 表示相对于结尾.
 	if _, err = fl.Seek(0, 0); err != nil {
 		f.logger.Error("state file seek failed, error: ", err)
+		fl.Close()
 		return nil, nil, err
 	}
 

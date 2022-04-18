@@ -49,3 +49,32 @@ type Transport interface {
 	// 如果 Transport 不支持该方法,则可以忽略调用,将心跳推给消费者 Channel.
 	SetHeartbeatHandler(cb func(rpc RPC))
 }
+
+// WithClose is an interface that a transport may provide which
+// allows a transport to be shut down cleanly when a Raft instance
+// shuts down.
+//
+// It is defined separately from Transport as unfortunately it wasn't in the
+// original interface specification.
+type WithClose interface {
+	// Close permanently closes a transport, stopping
+	// any associated goroutines and freeing other resources.
+	Close() error
+}
+
+// LoopbackTransport is an interface that provides a loopback transport suitable for testing
+// e.g. InmemTransport. It's there so we don't have to rewrite tests.
+type LoopbackTransport interface {
+	Transport // Embedded transport reference
+	WithPeers // Embedded peer management
+	WithClose // with a close routine
+}
+
+// WithPeers is an interface that a transport may provide which allows for connection and
+// disconnection. Unless the transport is a loopback transport, the transport specified to
+// "Connect" is likely to be nil.
+type WithPeers interface {
+	Connect(peer ServerAddress, t Transport) // Connect a peer
+	Disconnect(peer ServerAddress)           // Disconnect a given peer
+	DisconnectAll()                          // Disconnect all peers, possibly to reconnect them later
+}

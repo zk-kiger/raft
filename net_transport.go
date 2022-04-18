@@ -557,7 +557,7 @@ func (n *NetworkTransport) handleCommand(r *bufio.Reader, dec *codec.Decoder, en
 
 		// check if this is heartbeat.
 		if req.Term != 0 && req.Leader != nil &&
-			req.PreLogIndex == 0 && req.PreLogTerm == 0 &&
+			req.PrevLogIndex == 0 && req.PrevLogTerm == 0 &&
 			len(req.Entries) == 0 && req.LeaderCommitIndex == 0 {
 			isHeartbeat = true
 		}

@@ -20,8 +20,8 @@ type AppendEntriesRequest struct {
 	Leader []byte
 
 	// 前一个日志条目,用于日志完整性检测.
-	PreLogIndex uint64
-	PreLogTerm  uint64
+	PrevLogIndex uint64
+	PrevLogTerm  uint64
 
 	// 待提交的新日志.
 	Entries []*Log
@@ -47,6 +47,9 @@ type AppendEntriesResponse struct {
 
 	// Success 如果存在冲突日志,就不会成功.
 	Success bool
+
+	// NoRetryBackoff 在某些情况下,请求未成功,但无需等待下一次重试.
+	NoRetryBackoff bool
 }
 
 // GetRPCHeader 实现 WithRPCHeader 接口.
@@ -94,7 +97,7 @@ type InstallSnapshotRequest struct {
 	RPCHeader
 	SnapshotVersion SnapshotVersion
 
-	Term uint64
+	Term   uint64
 	Leader []byte
 
 	// 快照中最新的日志信息.
@@ -127,5 +130,3 @@ type InstallSnapshotResponse struct {
 func (r *InstallSnapshotResponse) GetRPCHeader() RPCHeader {
 	return r.RPCHeader
 }
-
-
