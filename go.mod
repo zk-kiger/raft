@@ -1,4 +1,4 @@
-module raft
+module githum.com/zk-kiger/raft
 
 go 1.16
 
