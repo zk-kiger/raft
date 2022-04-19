@@ -1,4 +1,4 @@
-module githum.com/zk-kiger/raft
+module github.com/zk-kiger/raft
 
 go 1.16
 
