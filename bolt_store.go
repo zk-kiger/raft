@@ -65,7 +65,10 @@ func New(options Options) (*BoltStore, error) {
 
 	// 如果 DB 被设置为 ReadOnly,则不允许创建 bucket.
 	if !options.readOnly() {
-
+		if err = store.initialize(); err != nil {
+			store.Close()
+			return nil, err
+		}
 	}
 	return store, nil
 }

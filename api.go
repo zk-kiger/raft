@@ -745,3 +745,14 @@ func (r *Raft) State() RaftState {
 func (r *Raft) LeaderCh() <-chan bool {
 	return r.leaderCh
 }
+
+// LastIndex 从最后一个日志或最后一个快照返回稳定存储中的最后一个索引.
+func (r *Raft) LastIndex() uint64 {
+	return r.getLastIndex()
+}
+
+// AppliedIndex 返回应用于 FSM 的最后一个索引.这通常落后于最后一个索引,
+// 特别是对于那些已持久化但尚未被领导者认为已提交的索引.
+func (r *Raft) AppliedIndex() uint64 {
+	return r.getLastApplied()
+}
