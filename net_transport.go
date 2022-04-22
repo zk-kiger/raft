@@ -425,6 +425,7 @@ func (n *NetworkTransport) SetHeartbeatHandler(cb func(rpc RPC)) {
 func sendRPC(conn *netConn, rpcType uint8, args interface{}) error {
 	// write the rpc type.
 	if err := conn.w.WriteByte(rpcType); err != nil {
+		conn.Release()
 		return err
 	}
 
@@ -446,7 +447,7 @@ func sendRPC(conn *netConn, rpcType uint8, args interface{}) error {
 func decodeResponse(conn *netConn, resp interface{}) (bool, error) {
 	// decode the error if have.
 	var rpcErr string
-	if err := conn.dec.Decode(rpcErr); err != nil {
+	if err := conn.dec.Decode(&rpcErr); err != nil {
 		conn.Release()
 		return false, err
 	}
@@ -550,7 +551,7 @@ func (n *NetworkTransport) handleCommand(r *bufio.Reader, dec *codec.Decoder, en
 	switch rpcType {
 	case rpcAppendEntries:
 		var req AppendEntriesRequest
-		if err = dec.Decode(req); err != nil {
+		if err = dec.Decode(&req); err != nil {
 			return err
 		}
 		rpc.Command = &req
